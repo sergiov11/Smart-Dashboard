@@ -5,4 +5,5 @@
     top: 475px;
     right: 100px;
     color: white;
+    z-index: 5;
 }
