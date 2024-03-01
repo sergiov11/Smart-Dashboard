@@ -7,8 +7,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.8.1/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.8.1/mapbox-gl.js"></script>
+    <link rel="stylesheet" href="css/chartpie.css" />
+    <link rel="stylesheet" href="css/style.css" />
+
+    <!-- Load Google Charts -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
     <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 50%;
+            width: 50%;
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -26,13 +43,14 @@
             bottom: 0;
             right: 0;
             width: 110px;
-            background: #fff;
+            background: #A9A9A9;
             margin-right: 20px;
             margin-bottom: 40px;
             padding: 10px 20px 10px 10px;
             border-radius: 3px;
             text-align: center;
             font-family: 'Open Sans', sans-serif;
+            z-index: 5;
 
         }
 
@@ -82,16 +100,15 @@
             color: white
         }
 
-    
     </style>
 </head>
 
 <body>
     <div id="map"></div>
+    <div id="chart_div"></div>
     <div id="legend"></div>
     <div id="title"> COVID-19 Cases in the U.S. </div>
     <div id="subtitle"> *For the year of 2020 </div>
-
 
     <script>
         mapboxgl.accessToken =
@@ -99,13 +116,13 @@
         let map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/dark-v10',
-            zoom: 3.42,
-            center: [-95, 38],
+            zoom: 6.3,
+            center: [-119.7401, 47.7511],
             projection: 'albers'
         });
 
-        const grades = [10000, 20000, 30000], 
-            colors = ['rgb(254,224,210)', 'rgb(252,146,114)', 'rgb(222,45,38)'], 
+        const grades = [10000, 20000, 30000],
+            colors = ['rgb(254,224,210)', 'rgb(252,146,114)', 'rgb(222,45,38)'],
             radii = [5, 15, 20];
 
         map.on('load', () => {
@@ -114,6 +131,7 @@
                 data: 'assets/us-covid-2020-counts.json'
             });
 
+            // Add event listener to show popup on click
             map.on('click', 'covidCounts-point', (event) => {
                 new mapboxgl.Popup()
                 .setLngLat(event.features[0].geometry.coordinates)
@@ -121,8 +139,8 @@
                 .addTo(map);
             });
 
+            // Create legend
             const legend = document.getElementById('legend');
-
             var labels = ['<strong>Size</strong>'], vbreak;
             for (var i = 0; i < grades.length; i++) {
                 vbreak = grades[i];
@@ -134,9 +152,9 @@
                 '</span></p>');
 
             }
-
             legend.innerHTML = labels.join('');
 
+            // Add layer to map
             map.addLayer({
                 'id': 'covidCounts-point',
                 'type': 'circle',
@@ -145,31 +163,56 @@
                     'circle-radius': {
                         'property': 'cases',
                         'stops': [
-                        [grades[0], radii[0]],
-                        [grades[1], radii[1]],
-                        [grades[2], radii[2]]
+                            [grades[0], radii[0]],
+                            [grades[1], radii[1]],
+                            [grades[2], radii[2]]
                         ]
                     },
                     'circle-color': {
                         'property': 'cases',
                         'stops': [
-                        [grades[0], colors[0]],
-                        [grades[1], colors[1]],
-                        [grades[2], colors[2]]
+                            [grades[0], colors[0]],
+                            [grades[1], colors[1]],
+                            [grades[2], colors[2]]
                         ]
                     },
                     'circle-stroke-color': 'white',
                     'circle-stroke-width': 1,
                     'circle-opacity': 0.28
-                }       
+                }
             });
 
-    
+            // Load Google Charts and draw the pie chart
+            google.charts.load('current', { 'packages': ['corechart'] });
+            google.charts.setOnLoadCallback(drawChart);
 
+            function drawChart() {
+                var data = google.visualization.arrayToDataTable([
+                    ['County', 'Rate'],
+                    ['King', 28.527],
+                    ['Pierce', 31.828],
+                    ['Benton', 59.109],
+                    ['Chelan', 66.713],
+                    ['Grant', 71.927],
+                    ['Morrow', 71.779]
+                ]);
+
+                var options = {
+                    title: 'COVID-19 Rates Across WA Counties',
+                    backgroundColor: '#f8f8f8',
+                    is3D: true,
+                    titleTextStyle: {
+                        color: 'black'
+                    },
+                    width: '100%',
+                    height: '100%'
+                };
+
+                var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+                chart.draw(data, options);
+            }
         });
 
     </script>
-
 </body>
-
 </html>

@@ -1,9 +1,11 @@
 #chart_div {
-    width: 85%;
-    height: 20%;
     position: absolute;
-    top: 475px;
+    top: 10px;
     right: 100px;
-    color: white;
+    color: black;
     z-index: 5;
+    right: 10px;
+    overflow-x: hidden;
+    height: 97%;
+    opacity: 95%;
 }
